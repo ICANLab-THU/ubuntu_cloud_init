@@ -1,0 +1,148 @@
+#cloud-config
+# See the autoinstall documentation at:
+# https://canonical-subiquity.readthedocs-hosted.com/en/latest/reference/autoinstall-reference.html
+autoinstall:
+  apt:
+    disable_components: []
+    fallback: offline-install
+    geoip: true
+    mirror-selection:
+      primary:
+      - country-mirror
+      - arches: &id001
+        - amd64
+        - i386
+        uri: http://archive.ubuntu.com/ubuntu/
+      - arches: &id002
+        - s390x
+        - arm64
+        - armhf
+        - powerpc
+        - ppc64el
+        - riscv64
+        uri: http://ports.ubuntu.com/ubuntu-ports
+    preserve_sources_list: false
+    security:
+    - arches: *id001
+      uri: http://security.ubuntu.com/ubuntu/
+    - arches: *id002
+      uri: http://ports.ubuntu.com/ubuntu-ports
+  codecs:
+    install: false
+  drivers:
+    install: true
+  identity:
+    hostname: titan
+    password: # sha-512
+    username: admin
+  user-data:
+    users:
+    - name: abm69
+      primary_group: users
+      groups: sudo
+      sudo: "ALL=(ALL) NOPASSWD:ALL"
+      shell: /bin/fish
+      lock_passwd: false
+      passwd: "# sha-512"  
+      ssh_authorized_keys:
+        - ""
+#     - name: admin
+#       gecos: "Administrator"
+#       primary_group: admin
+#       groups: sudo, adm, users
+#       sudo: "ALL=(ALL) NOPASSWD:ALL"
+#       shell: /bin/bash
+#       lock_passwd: false
+#       passwd: "$6$T1E9ePYrWkQN1K26$Y4GzSP2hz7Uf.kHk6eY5MAQ8FgSSegREt0Ow82UkMQBrpTUVnIyGXni/aNPtqk2SoSC3M.vb13sDITFtZW8Cm."  
+  kernel:
+    package: linux-generic
+  keyboard:
+    layout: us
+    toggle: null
+    variant: ''
+  locale: en_US.UTF-8
+  network:
+    version: 2
+    ethernets:
+      nic0:
+        match:
+          name: e*
+        dhcp4: false
+        addresses:
+          - 192.168.9.2/16
+        gateway4: 192.168.0.1
+        nameservers:
+          addresses:
+            - 192.168.0.2
+            - 8.8.8.8
+  oem:
+    install: auto
+  source:
+    id: ubuntu-server
+    search_drivers: true
+  ssh:
+    allow-pw: true
+    authorized-keys:
+    - ''
+    install-server: true
+  storage:
+    swap:
+      size: 0
+    layout:
+      name: direct
+    config:
+      - type: disk
+        id: disk-nvme0n1
+        match:
+          path: /dev/nvme0n1
+        ptable: gpt
+        preserve: false
+        grub_device: false
+        wipe: superblock-recursive
+      - type: partition
+        id: partition-0
+        device: disk-nvme0n1
+        size: 1G
+        flag: boot
+        number: 1
+        wipe: superblock
+        preserve: false
+        grub_device: true
+      - type: format
+        id: format-0
+        fstype: fat32
+        volume: partition-0
+        preserve: false
+      - type: partition
+        id: partition-1
+        device: disk-nvme0n1
+        size: -1
+        wipe: superblock
+        number: 2
+        preserve: false
+        grub_device: false
+      - type: format
+        id: format-1
+        fstype: ext4
+        volume: partition-1
+        preserve: false
+      - type: mount
+        id: mount-0
+        path: /boot/efi
+        device: format-0
+      - type: mount
+        id: mount-1
+        device: format-1
+        path: /
+  
+  updates: all
+  packages: 
+    - build-essential
+    - net-tools
+    - bpytop
+    - fish
+    - git
+    - curl
+    - vim
+  timezone: "Asia/Taipei"
+  version: 1
